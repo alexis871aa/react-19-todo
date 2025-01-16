@@ -1,37 +1,22 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { CreateUserForm } from '@/features/user/create-user';
 import { UsersList } from '@/widgets/user-list';
-import { nanoid } from 'nanoid';
+import { fetchUsers } from '@/shared/api';
 
-interface User {
-	id: string;
-	email: string;
-}
+// как только наше приложение загрузится, он сразу же отправит запрос к серверу
+const defaultUsersPromise = fetchUsers();
 
 export const UsersPage = () => {
-	const [users, setUsers] = useState<User[]>([]);
-	const [email, setEmail] = useState('');
-
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		setUsers([...users, { id: nanoid(), email }]);
-		setEmail('');
-	};
-
-	const handleDelete = (id: string) => {
-		setUsers((lastUsers) => lastUsers.filter((user) => user.id !== id));
-	};
+	const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
+	const refetchUsers = () => setUsersPromise(fetchUsers());
 
 	return (
 		<main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
 			<h1 className="text-3xl font-bold underline">Users</h1>
-			<CreateUserForm />
-			<UsersList
-				users={[
-					{ id: '1', email: 'Oc9Ct@example.com' },
-					{ id: '2', email: '4i0w5@example.com' },
-				]}
-			/>
+			<CreateUserForm refetchUsers={refetchUsers} />
+			<Suspense fallback={<div>Loading...</div>}>
+				<UsersList usersPromise={usersPromise} />
+			</Suspense>
 		</main>
 	);
 };
