@@ -1,34 +1,24 @@
-import { startTransition, useActionState, useState } from 'react';
+import { useActionState } from 'react';
 import { createUserAction } from '@/pages/users/actions';
 
 export const CreateUserForm = ({ refetchUsers }: { refetchUsers: () => void }) => {
-	const [email, setEmail] = useState('');
-
 	// transition в реакте это функция перехода, это какие-то долгие обновления.
 	// таким образом, есть быстрые обновления, например, мы захотим очистить кнопку и поле email, input и т.д. Контролируемые input это не transition.
 	// transition - это что-то долгое, например, мы запрашиваем новые данные или переход между страницами, открытие какой-то штуки модалки. Пользователю не так важно, чтобы это было супер быстро. Он ожидает, что это будет долго.
 
 	// таким образом, реакт приоритезирует с помощью transition вещи так, что transition отображаются чуть позже, чем всякие важные обновления, которые вводит пользователь
 	const [state, dispatch, isPending] = useActionState(
-		createUserAction({ refetchUsers, setEmail }),
-		{},
+		createUserAction({ refetchUsers }),
+		{ email: '' },
 	);
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		startTransition(async () => {
-			dispatch({ email });
-		});
-	};
-
 	return (
-		<form className="flex gap-2" onSubmit={handleSubmit}>
+		<form className="flex gap-2" action={dispatch}>
 			<input
+				name="email"
 				type="email"
 				className="border p-2 rounded"
-				placeholder="New user email"
-				value={email}
-				onChange={(e) => setEmail(e.target.value)}
+				defaultValue={state.email}
 				disabled={isPending}
 			/>
 			<button
