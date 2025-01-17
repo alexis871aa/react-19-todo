@@ -1,6 +1,5 @@
-import { useState, useTransition } from 'react';
-import { createUser } from '@/shared/api';
-import { nanoid } from 'nanoid';
+import { startTransition, useActionState, useState } from 'react';
+import { createUserAction } from '@/pages/users/actions';
 
 export const CreateUserForm = ({ refetchUsers }: { refetchUsers: () => void }) => {
 	const [email, setEmail] = useState('');
@@ -10,16 +9,15 @@ export const CreateUserForm = ({ refetchUsers }: { refetchUsers: () => void }) =
 	// transition - это что-то долгое, например, мы запрашиваем новые данные или переход между страницами, открытие какой-то штуки модалки. Пользователю не так важно, чтобы это было супер быстро. Он ожидает, что это будет долго.
 
 	// таким образом, реакт приоритезирует с помощью transition вещи так, что transition отображаются чуть позже, чем всякие важные обновления, которые вводит пользователь
-	const [isPending, startTransition] = useTransition();
+	const [state, dispatch, isPending] = useActionState(
+		createUserAction({ refetchUsers, setEmail }),
+		{},
+	);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		startTransition(async () => {
-			await createUser({ id: nanoid(), email });
-			startTransition(() => {
-				refetchUsers();
-				setEmail('');
-			});
+			dispatch({ email });
 		});
 	};
 
@@ -40,6 +38,7 @@ export const CreateUserForm = ({ refetchUsers }: { refetchUsers: () => void }) =
 			>
 				Add
 			</button>
+			{state.error && <div className="text-red-500">{state.error}</div>}
 		</form>
 	);
 };

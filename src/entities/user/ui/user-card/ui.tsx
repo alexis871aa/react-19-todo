@@ -9,12 +9,11 @@ interface UserCardProps {
 
 export const UserCard: FC<UserCardProps> = ({ user, refetchUsers }) => {
 	const [isPending, startTransition] = useTransition();
+
 	const handleDelete = (id: string) => {
 		startTransition(async () => {
 			await deleteUser(id);
-			startTransition(() => {
-				refetchUsers();
-			});
+			refetchUsers();
 		});
 	};
 
@@ -23,7 +22,7 @@ export const UserCard: FC<UserCardProps> = ({ user, refetchUsers }) => {
 			{user.email}
 			<button
 				type="button"
-				className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-auto"
+				className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400"
 				onClick={() => handleDelete(user.id)}
 				disabled={isPending}
 			>
