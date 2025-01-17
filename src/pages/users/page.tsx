@@ -15,7 +15,7 @@ export const UsersPage = () => {
 			<h1 className="text-3xl font-bold underline">Users</h1>
 			<CreateUserForm refetchUsers={refetchUsers} />
 			<Suspense fallback={<div>Loading...</div>}>
-				<UsersList usersPromise={usersPromise} />
+				<UsersList usersPromise={usersPromise} refetchUsers={refetchUsers} />
 			</Suspense>
 		</main>
 	);
