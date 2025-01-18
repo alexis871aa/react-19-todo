@@ -1,15 +1,11 @@
-import { startTransition, Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { CreateUserForm } from '@/features/user/create-user';
 import { UsersList } from '@/widgets/user-list';
-import { fetchUsers } from '@/shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
-
-// как только наше приложение загрузится, он сразу же отправит запрос к серверу
-const defaultUsersPromise = fetchUsers();
+import { useUsers } from './use-users';
 
 export const UsersPage = () => {
-	const [usersPromise, setUsersPromise] = useState(defaultUsersPromise);
-	const refetchUsers = () => startTransition(() => setUsersPromise(fetchUsers()));
+	const { usersPromise, refetchUsers } = useUsers();
 
 	return (
 		<main className="container mx-auto p-4 pt-10 flex flex-col gap-4">
