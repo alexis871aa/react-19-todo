@@ -1,13 +1,22 @@
+import { User } from '@/entities/user';
 import { createUser, deleteUser } from '@/shared/api';
 import { nanoid } from 'nanoid';
 
 type CreateActionState = { error?: string; email: string };
 
-type DeleteActionState = { error?: string };
+export type CreateUserAction = (
+	state: CreateActionState,
+	formData: FormData,
+) => Promise<CreateActionState>;
 
-export const createUserAction =
-	({ refetchUsers }: { refetchUsers: () => void }) =>
-	async (_: CreateActionState, formData: FormData): Promise<CreateActionState> => {
+export const createUserAction = ({
+	refetchUsers,
+	optimisticCreate,
+}: {
+	refetchUsers: () => void;
+	optimisticCreate: (user: User) => void;
+}): CreateUserAction => {
+	return async (_, formData) => {
 		const email = formData.get('email') as string;
 
 		if (email === 'admin@gmail.com') {
@@ -18,7 +27,12 @@ export const createUserAction =
 		}
 
 		try {
-			await createUser({ id: nanoid(), email });
+			const user = {
+				id: nanoid(),
+				email,
+			};
+			optimisticCreate(user);
+			await createUser(user);
 
 			await refetchUsers();
 
@@ -32,11 +46,26 @@ export const createUserAction =
 			};
 		}
 	};
+};
 
-export const deleteUserAction =
-	({ id, refetchUsers }: { id: string; refetchUsers: () => void }) =>
-	async (_: DeleteActionState): Promise<{ error?: string }> => {
+type DeleteActionState = { error?: string };
+
+export type DeleteUserAction = (
+	state: DeleteActionState,
+	formData: FormData,
+) => Promise<DeleteActionState>;
+
+export const deleteUserAction = ({
+	refetchUsers,
+	optimisticDelete,
+}: {
+	refetchUsers: () => void;
+	optimisticDelete: (id: string) => void;
+}): DeleteUserAction => {
+	return async (_, formData) => {
+		const id = formData.get('id') as string;
 		try {
+			optimisticDelete(id);
 			await deleteUser(id);
 			refetchUsers();
 
@@ -47,3 +76,4 @@ export const deleteUserAction =
 			};
 		}
 	};
+};
